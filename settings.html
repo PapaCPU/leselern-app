@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einstellungen - Leselern-App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Einstellungen</h1>
+            <p class="text-center">Passe die App an deine Bedürfnisse an</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>API-Einstellungen</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="api-key">OpenAI API-Schlüssel</label>
+                        <input type="password" id="api-key" placeholder="sk-...">
+                    </div>
+                    <div class="text-center">
+                        <button class="btn" id="save-api-key">API-Schlüssel speichern</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Spieleinstellungen</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="difficulty">Schwierigkeitsgrad</label>
+                        <select id="difficulty">
+                            <option value="easy">Leicht</option>
+                            <option value="medium" selected>Mittel</option>
+                            <option value="hard">Schwer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="time-limit">Zeitlimit für Antworten (Sekunden)</label>
+                        <select id="time-limit">
+                            <option value="5">5 Sekunden</option>
+                            <option value="8" selected>8 Sekunden</option>
+                            <option value="10">10 Sekunden</option>
+                        </select>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn" id="save-settings">Einstellungen speichern</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Darstellung</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="color-theme">Farbschema</label>
+                        <select id="color-theme">
+                            <option value="default" selected>Standard</option>
+                            <option value="blue">Blau</option>
+                            <option value="pink">Rosa</option>
+                            <option value="orange">Orange</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="font-size">Schriftgröße</label>
+                        <select id="font-size">
+                            <option value="small">Klein</option>
+                            <option value="medium" selected>Mittel</option>
+                            <option value="large">Groß</option>
+                        </select>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn" id="save-display">Darstellung speichern</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-20">
+                <a href="index.html" class="btn">Zurück zum Menü</a>
+            </div>
+        </main>
+
+        <footer class="text-center mt-20">
+            <p>Leselern-App für Kinder</p>
+        </footer>
+    </div>
+
+    <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
+    <script src="js/minimal.js"></script>
+    <!-- Einstellungsspezifisches JavaScript -->
+    <script src="js/settings-module.js"></script>
+</body>
+</html>

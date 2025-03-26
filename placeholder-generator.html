@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platzhalter-Bild Generator</title>
+</head>
+<body>
+    <canvas id="canvas" width="400" height="400" style="display: none;"></canvas>
+    <script>
+        // Platzhalter-Bild für die App erstellen
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Hintergrund
+        ctx.fillStyle = '#f0f0f0';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Rahmen
+        ctx.strokeStyle = '#4CAF50';
+        ctx.lineWidth = 10;
+        ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+        
+        // Text
+        ctx.fillStyle = '#333333';
+        ctx.font = 'bold 24px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Platzhalter-Bild', canvas.width / 2, canvas.height / 2 - 20);
+        ctx.fillText('Hier erscheint später', canvas.width / 2, canvas.height / 2 + 20);
+        ctx.fillText('ein generiertes Bild', canvas.width / 2, canvas.height / 2 + 60);
+        
+        // Als Bild anzeigen
+        const img = document.createElement('img');
+        img.src = canvas.toDataURL('image/png');
+        document.body.appendChild(img);
+        
+        // Download-Link
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = 'placeholder.png';
+        link.textContent = 'Platzhalter-Bild herunterladen';
+        link.style.display = 'block';
+        link.style.margin = '20px';
+        document.body.appendChild(link);
+    </script>
+</body>
+</html>

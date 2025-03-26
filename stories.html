@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geschichten - Leselern-App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Geschichten</h1>
+            <p class="text-center">Lies die Geschichte laut vor!</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="game-area">
+                    <h3 id="story-title">Der kleine Hund</h3>
+                    <div class="story-content" id="story-content">
+                        <p>Es war einmal ein kleiner Hund. Er hieß Max. Max spielte gerne im Park. Er lief und sprang herum. Max hatte viele Freunde. Sie spielten zusammen Ball.</p>
+                    </div>
+                    <button class="btn btn-large" id="start-reading">Geschichte vorlesen</button>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="trophy-counter">
+                    <span class="trophy-icon">🏆</span>
+                    <span id="trophy-count">0</span> Pokale
+                </div>
+            </div>
+
+            <div class="text-center mt-20">
+                <a href="index.html" class="btn">Zurück zum Menü</a>
+            </div>
+        </main>
+
+        <footer class="text-center mt-20">
+            <p>Leselern-App für Kinder</p>
+        </footer>
+    </div>
+
+    <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
+    <script src="js/minimal.js"></script>
+    <!-- Spielspezifisches JavaScript -->
+    <script>
+        // Hier würde später die Funktionalität für die Spracherkennung und API-Kommunikation implementiert werden
+        document.addEventListener('DOMContentLoaded', function() {
+            // Beispielgeschichten (später durch API-Anfrage ersetzt)
+            const stories = [
+                {
+                    title: 'Der kleine Hund',
+                    content: 'Es war einmal ein kleiner Hund. Er hieß Max. Max spielte gerne im Park. Er lief und sprang herum. Max hatte viele Freunde. Sie spielten zusammen Ball.'
+                },
+                {
+                    title: 'Die Katze auf dem Baum',
+                    content: 'Mia ist eine Katze. Sie klettert gerne auf Bäume. Eines Tages kletterte sie sehr hoch. Sie konnte nicht mehr runter. Tom half ihr. Er holte eine Leiter. Mia war froh.'
+                },
+                {
+                    title: 'Der rote Ball',
+                    content: 'Lisa hat einen roten Ball. Der Ball ist neu. Lisa spielt im Garten. Der Ball rollt weg. Lisa sucht den Ball. Sie findet ihn unter einem Busch. Lisa ist glücklich.'
+                }
+            ];
+            
+            let currentStoryIndex = 0;
+            
+            // Geschichte anzeigen
+            function showStory() {
+                const story = stories[currentStoryIndex];
+                document.getElementById('story-title').textContent = story.title;
+                document.getElementById('story-content').innerHTML = '<p>' + story.content + '</p>';
+            }
+            
+            // Event-Listener für den Start-Button
+            document.getElementById('start-reading').addEventListener('click', function() {
+                // API-Key überprüfen
+                if (!checkApiKey()) {
+                    return;
+                }
+                
+                // Hier würde später die Spracherkennung gestartet werden
+                this.textContent = 'Ich höre...';
+                this.disabled = true;
+                
+                // Simulierte Erkennung (später durch echte API-Anfrage ersetzt)
+                setTimeout(function() {
+                    const success = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
+                    
+                    if (success) {
+                        showMessage('Super! Du hast die Geschichte toll vorgelesen!', 'success');
+                        
+                        // Pokale hinzufügen (mehr für Geschichten)
+                        addTrophies(2); // 2 Pokale für Geschichten
+                        
+                        // Zur nächsten Geschichte wechseln
+                        currentStoryIndex = (currentStoryIndex + 1) % stories.length;
+                    } else {
+                        showMessage('Versuche es noch einmal! Du schaffst das!', 'error');
+                    }
+                    
+                    // Button zurücksetzen
+                    document.getElementById('start-reading').textContent = 'Geschichte vorlesen';
+                    document.getElementById('start-reading').disabled = false;
+                    
+                    // Neue Geschichte nach kurzer Verzögerung bei Erfolg
+                    if (success) {
+                        setTimeout(showStory, 2000);
+                    }
+                }, 5000); // Längere Zeit für Geschichten
+            });
+            
+            // Initial eine Geschichte anzeigen
+            showStory();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokale einlösen - Leselern-App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Pokale einlösen</h1>
+            <p class="text-center">Erstelle ein Bild mit deinen gesammelten Pokalen!</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="trophy-counter">
+                    <span class="trophy-icon">🏆</span>
+                    <span id="trophy-count">0</span> Pokale
+                </div>
+                <p class="text-center">Du brauchst 5 Pokale, um ein Bild zu erstellen.</p>
+            </div>
+
+            <div class="card" id="image-creation">
+                <h2>Bild erstellen</h2>
+                <div class="form-group">
+                    <label for="image-prompt">Was für ein Bild möchtest du erstellen?</label>
+                    <input type="text" id="image-prompt" placeholder="z.B. Ein Hund spielt mit einem Ball">
+                </div>
+                <div class="text-center">
+                    <button class="btn btn-large" id="create-image">Bild erstellen (5 Pokale)</button>
+                    <button class="btn" id="speak-prompt">Per Sprache beschreiben</button>
+                </div>
+            </div>
+
+            <div class="card hidden" id="image-result">
+                <h2>Dein Bild</h2>
+                <img src="" alt="Generiertes Bild" class="image-display" id="generated-image">
+                <div class="text-center mt-20">
+                    <button class="btn" id="save-image">Bild speichern</button>
+                    <button class="btn" id="new-image">Neues Bild erstellen</button>
+                </div>
+            </div>
+
+            <div class="text-center mt-20">
+                <a href="index.html" class="btn">Zurück zum Menü</a>
+            </div>
+        </main>
+
+        <footer class="text-center mt-20">
+            <p>Leselern-App für Kinder</p>
+        </footer>
+    </div>
+
+    <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
+    <script src="js/minimal.js"></script>
+    <!-- OpenAI API und Audio-Recorder -->
+    <script src="js/openai-api.js"></script>
+    <script src="js/audio-recorder.js"></script>
+    <!-- Spielspezifisches JavaScript -->
+    <script src="js/trophy-exchange.js"></script>
+</body>
+</html>

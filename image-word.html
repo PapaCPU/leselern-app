@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bild-zu-Wort - Leselern-App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Bild-zu-Wort</h1>
+            <p class="text-center">Was siehst du auf dem Bild? Sprich es laut aus!</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <div class="game-area">
+                    <img src="images/placeholder.png" alt="Bild zum Erraten" class="image-display" id="word-image">
+                    <div id="hint-area" class="mb-20">
+                        <p>Tipp: <span id="word-hint">Es beginnt mit H...</span></p>
+                    </div>
+                    <button class="btn btn-large" id="start-reading">Antwort geben</button>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="trophy-counter">
+                    <span class="trophy-icon">🏆</span>
+                    <span id="trophy-count">0</span> Pokale
+                </div>
+            </div>
+
+            <div class="text-center mt-20">
+                <a href="index.html" class="btn">Zurück zum Menü</a>
+            </div>
+        </main>
+
+        <footer class="text-center mt-20">
+            <p>Leselern-App für Kinder</p>
+        </footer>
+    </div>
+
+    <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
+    <script src="js/minimal.js"></script>
+    <!-- Spielspezifisches JavaScript -->
+    <script>
+        // Hier würde später die Funktionalität für die Spracherkennung und API-Kommunikation implementiert werden
+        document.addEventListener('DOMContentLoaded', function() {
+            // Beispielbilder und Wörter (später durch API-Anfrage ersetzt)
+            const wordImages = [
+                { word: 'Hund', hint: 'Es beginnt mit H...', image: 'images/placeholder.png' },
+                { word: 'Katze', hint: 'Es beginnt mit K...', image: 'images/placeholder.png' },
+                { word: 'Haus', hint: 'Es beginnt mit H...', image: 'images/placeholder.png' }
+            ];
+            
+            let currentWordIndex = 0;
+            
+            // Bild und Hinweis anzeigen
+            function showWordImage() {
+                const wordData = wordImages[currentWordIndex];
+                document.getElementById('word-image').src = wordData.image;
+                document.getElementById('word-image').alt = 'Bild zum Erraten: ' + wordData.word;
+                document.getElementById('word-hint').textContent = wordData.hint;
+            }
+            
+            // Event-Listener für den Start-Button
+            document.getElementById('start-reading').addEventListener('click', function() {
+                // API-Key überprüfen
+                if (!checkApiKey()) {
+                    return;
+                }
+                
+                // Hier würde später die Spracherkennung gestartet werden
+                this.textContent = 'Ich höre...';
+                this.disabled = true;
+                
+                // Simulierte Erkennung (später durch echte API-Anfrage ersetzt)
+                setTimeout(function() {
+                    const success = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
+                    const wordData = wordImages[currentWordIndex];
+                    
+                    if (success) {
+                        showMessage('Super! "' + wordData.word + '" ist richtig!', 'success');
+                        
+                        // Pokal hinzufügen
+                        addTrophies(1);
+                        
+                        // Zum nächsten Wort wechseln
+                        currentWordIndex = (currentWordIndex + 1) % wordImages.length;
+                    } else {
+                        showMessage('Versuche es noch einmal! Tipp: Es ist ein "' + wordData.word + '"', 'error');
+                    }
+                    
+                    // Button zurücksetzen
+                    document.getElementById('start-reading').textContent = 'Antwort geben';
+                    document.getElementById('start-reading').disabled = false;
+                    
+                    // Neues Bild nach kurzer Verzögerung bei Erfolg
+                    if (success) {
+                        setTimeout(showWordImage, 2000);
+                    }
+                }, 3000);
+            });
+            
+            // Initial ein Bild anzeigen
+            showWordImage();
+        });
+    </script>
+</body>
+</html>

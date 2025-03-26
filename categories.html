@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wort-Kategorien - Leselern-App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Wort-Kategorien</h1>
+            <p class="text-center">Wähle eine Kategorie und lies die Wörter vor!</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>Kategorien</h2>
+                <div class="menu">
+                    <div class="menu-item">
+                        <button class="btn btn-large" data-category="tiere">Tiere</button>
+                    </div>
+                    <div class="menu-item">
+                        <button class="btn btn-large btn-secondary" data-category="essen">Essen</button>
+                    </div>
+                    <div class="menu-item">
+                        <button class="btn btn-large btn-accent" data-category="farben">Farben</button>
+                    </div>
+                    <div class="menu-item">
+                        <button class="btn btn-large" data-category="spielzeug">Spielzeug</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card hidden" id="game-area">
+                <div class="game-area">
+                    <h3 id="category-title">Kategorie: Tiere</h3>
+                    <div class="word-display" id="current-word">Hund</div>
+                    <button class="btn btn-large" id="start-reading">Vorlesen starten</button>
+                    <div class="feedback" id="feedback"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="trophy-counter">
+                    <span class="trophy-icon">🏆</span>
+                    <span id="trophy-count">0</span> Pokale
+                </div>
+            </div>
+
+            <div class="text-center mt-20">
+                <a href="index.html" class="btn">Zurück zum Menü</a>
+            </div>
+        </main>
+
+        <footer class="text-center mt-20">
+            <p>Leselern-App für Kinder</p>
+        </footer>
+    </div>
+
+    <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
+    <script src="js/minimal.js"></script>
+    <!-- Spielspezifisches JavaScript -->
+    <script>
+        // Hier würde später die Funktionalität für die Spracherkennung und API-Kommunikation implementiert werden
+        document.addEventListener('DOMContentLoaded', function() {
+            // Beispielwörter nach Kategorien (später durch API-Anfrage ersetzt)
+            const categories = {
+                tiere: ['Hund', 'Katze', 'Maus', 'Pferd', 'Kuh', 'Vogel'],
+                essen: ['Brot', 'Apfel', 'Käse', 'Milch', 'Wurst', 'Ei'],
+                farben: ['Rot', 'Blau', 'Grün', 'Gelb', 'Schwarz', 'Weiß'],
+                spielzeug: ['Ball', 'Puppe', 'Auto', 'Bausteine', 'Puzzle', 'Buch']
+            };
+            
+            let currentCategory = '';
+            let currentWordIndex = 0;
+            
+            // Kategorie-Buttons mit Event-Listenern versehen
+            const categoryButtons = document.querySelectorAll('[data-category]');
+            categoryButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    currentCategory = this.getAttribute('data-category');
+                    document.getElementById('category-title').textContent = 'Kategorie: ' + currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
+                    document.getElementById('game-area').classList.remove('hidden');
+                    currentWordIndex = 0;
+                    showWord();
+                });
+            });
+            
+            // Wort anzeigen
+            function showWord() {
+                if (currentCategory && categories[currentCategory]) {
+                    const words = categories[currentCategory];
+                    document.getElementById('current-word').textContent = words[currentWordIndex];
+                }
+            }
+            
+            // Event-Listener für den Start-Button
+            document.getElementById('start-reading').addEventListener('click', function() {
+                if (!currentCategory) return;
+                
+                // API-Key überprüfen
+                if (!checkApiKey()) {
+                    return;
+                }
+                
+                // Hier würde später die Spracherkennung gestartet werden
+                this.textContent = 'Ich höre...';
+                this.disabled = true;
+                
+                // Simulierte Erkennung (später durch echte API-Anfrage ersetzt)
+                setTimeout(function() {
+                    const success = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
+                    const words = categories[currentCategory];
+                    
+                    if (success) {
+                        showMessage('Super! Das war richtig!', 'success');
+                        
+                        // Pokal hinzufügen
+                        addTrophies(1);
+                        
+                        // Zum nächsten Wort wechseln
+                        currentWordIndex = (currentWordIndex + 1) % words.length;
+                    } else {
+                        showMessage('Versuche es noch einmal!', 'error');
+                    }
+                    
+                    // Button zurücksetzen
+                    document.getElementById('start-reading').textContent = 'Vorlesen starten';
+                    document.getElementById('start-reading').disabled = false;
+                    
+                    // Neues Wort nach kurzer Verzögerung bei Erfolg
+                    if (success) {
+                        setTimeout(showWord, 2000);
+                    }
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>

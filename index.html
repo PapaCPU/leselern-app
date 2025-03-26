@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leselern-App</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Leselern-App</h1>
+            <p class="text-center">Lerne Lesen mit Spaß und sammle Pokale!</p>
+        </header>
+
+        <main>
+            <div class="card">
+                <h2>Hauptmenü</h2>
+                <div class="menu">
+                    <div class="menu-item">
+                        <a href="reading.html" class="btn btn-large">Lesen</a>
+                    </div>
+                    <div class="menu-item">
+                        <a href="image-word.html" class="btn btn-large btn-secondary">Bild-zu-Wort</a>
+                    </div>
+                    <div class="menu-item">
+                        <a href="categories.html" class="btn btn-large btn-accent">Wort-Kategorien</a>
+                    </div>
+                    <div class="menu-item">
+                        <a href="stories.html" class="btn btn-large">Geschichten</a>
+                    </div>
+                    <div class="menu-item">
+                        <a href="trophies.html" class="btn btn-large btn-secondary">Pokale einlösen</a>
+                    </div>
+                    <div class="menu-item">
+                        <a href="settings.html" class="btn btn-large btn-accent">Einstellungen</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="trophy-counter">
+                    <span class="trophy-icon">🏆</span>
+                    <span id="trophy-count">0</span> Pokale
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-20">
+            <p>Leselern-App für Kinder</p>
+        </footer>
+    </div>
+
+    <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
+    <script src="js/minimal.js"></script>
+</body>
+</html>
