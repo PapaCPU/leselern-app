@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // const imageUrl = await generateImage(enhancedPrompt, apiKey);
       
       // Für die Demo: Platzhalter-Bild verwenden
-      const imageUrl = 'images/placeholder.png';
+      const imageUrl = await generateImage(enhancedPrompt, apiKey);
       
       // Pokale abziehen
       if (removeTrophies(5)) {
