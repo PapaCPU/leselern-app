@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokale einlösen - Leselern-App</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/additional-styles.css">
+    <link rel="stylesheet" href="css/microphone-styles.css">
 </head>
 <body>
     <div class="container">
@@ -19,18 +21,43 @@
                     <span class="trophy-icon">🏆</span>
                     <span id="trophy-count">0</span> Pokale
                 </div>
-                <p class="text-center">Du brauchst 5 Pokale, um ein Bild zu erstellen.</p>
+                <p class="text-center">Du brauchst 5 Pokale für ein einfaches Bild oder 10 Pokale für ein Bild mit einer Person.</p>
             </div>
 
             <div class="card" id="image-creation">
                 <h2>Bild erstellen</h2>
+                <div class="form-group reference-select-container">
+                    <label for="reference-select">Wähle eine Person für dein Bild:</label>
+                    <select id="reference-select">
+                        <option value="none">Kein Referenzbild (5 Pokale)</option>
+                        <!-- Weitere Optionen werden dynamisch hinzugefügt -->
+                    </select>
+                </div>
                 <div class="form-group">
                     <label for="image-prompt">Was für ein Bild möchtest du erstellen?</label>
                     <input type="text" id="image-prompt" placeholder="z.B. Ein Hund spielt mit einem Ball">
                 </div>
                 <div class="text-center">
-                    <button class="btn btn-large" id="create-image">Bild erstellen (5 Pokale)</button>
-                    <button class="btn" id="speak-prompt">Per Sprache beschreiben</button>
+                    <button class="btn btn-large" id="create-image">Bild erstellen</button>
+                    
+                    <div class="mic-container">
+                        <div class="mic-button" id="mic-button">
+                            <img src="images/icons/microphone/mic.svg" alt="Mikrofon" id="mic-icon">
+                        </div>
+                        <span class="mic-text">Per Sprache beschreiben</span>
+                        <span class="mic-timer" id="mic-timer"></span>
+                    </div>
+                    
+                    <div class="recording-feedback hidden" id="recording-feedback">
+                        <div class="recording-waves">
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                        </div>
+                        <span>Ich höre zu...</span>
+                    </div>
                 </div>
             </div>
 
@@ -60,5 +87,102 @@
     <script src="js/audio-recorder.js"></script>
     <!-- Spielspezifisches JavaScript -->
     <script src="js/trophy-exchange.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mikrofon-Button-Handler
+            const micButton = document.getElementById('mic-button');
+            const micIcon = document.getElementById('mic-icon');
+            const micTimer = document.getElementById('mic-timer');
+            const recordingFeedback = document.getElementById('recording-feedback');
+            const imagePromptInput = document.getElementById('image-prompt');
+            
+            if (micButton) {
+                micButton.addEventListener('click', function() {
+                    // API-Key überprüfen
+                    if (!checkApiKey()) {
+                        return;
+                    }
+                    
+                    // Audiorecorder initialisieren, falls noch nicht geschehen
+                    if (!audioRecorder) {
+                        audioRecorder = createAudioRecorder({
+                            timeLimit: 3000, // 3 Sekunden
+                            silenceDetection: true,
+                            onStart: function() {
+                                micButton.classList.add('active');
+                                micIcon.src = 'images/icons/microphone/mic-active.svg';
+                                recordingFeedback.classList.remove('hidden');
+                                micTimer.textContent = '3s';
+                            },
+                            onStop: async function(audioBlob) {
+                                micButton.classList.remove('active');
+                                micIcon.src = 'images/icons/microphone/mic.svg';
+                                recordingFeedback.classList.add('hidden');
+                                micTimer.textContent = '';
+                                
+                                // Hier würde später die Spracherkennung erfolgen
+                                // Für jetzt simulieren wir eine Antwort
+                                const transcription = await simulateTranscription(audioBlob);
+                                
+                                // Transkription in das Eingabefeld einfügen
+                                if (imagePromptInput) {
+                                    imagePromptInput.value = transcription;
+                                }
+                            },
+                            onError: function(error) {
+                                console.error('Fehler bei der Sprachaufnahme:', error);
+                                showMessage('Fehler bei der Sprachaufnahme. Bitte versuche es erneut.', 'error');
+                                
+                                micButton.classList.remove('active');
+                                micIcon.src = 'images/icons/microphone/mic.svg';
+                                recordingFeedback.classList.add('hidden');
+                                micTimer.textContent = '';
+                            },
+                            onTimeUpdate: function(elapsed, remaining) {
+                                const remainingSeconds = Math.ceil(remaining / 1000);
+                                micTimer.textContent = remainingSeconds + 's';
+                            }
+                        });
+                        
+                        audioRecorder.init().catch(error => {
+                            console.error('Fehler beim Initialisieren des Audiorecorders:', error);
+                        });
+                    }
+                    
+                    // Sprachaufnahme starten
+                    if (audioRecorder) {
+                        audioRecorder.start();
+                    }
+                });
+            }
+            
+            // Funktion zum Simulieren der Spracherkennung
+            async function simulateTranscription(audioBlob) {
+                // Hier würde später die echte Spracherkennung erfolgen
+                // Für jetzt simulieren wir eine Antwort
+                
+                const exampleTranscriptions = [
+                    "Ein Hund spielt im Park",
+                    "Eine Katze sitzt auf dem Sofa",
+                    "Ein Astronaut auf dem Mond",
+                    "Ein Dinosaurier im Dschungel",
+                    "Ein Pirat auf einem Schiff",
+                    "Eine Fee im Zauberwald",
+                    "Ein Ritter kämpft gegen einen Drachen",
+                    "Ein Roboter in einer futuristischen Stadt",
+                    "Ein Superheld rettet die Welt",
+                    "Ein Einhorn im Regenbogenland"
+                ];
+                
+                // Zufällige Transkription auswählen
+                const randomIndex = Math.floor(Math.random() * exampleTranscriptions.length);
+                
+                // Kurze Verzögerung simulieren
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                return exampleTranscriptions[randomIndex];
+            }
+        });
+    </script>
 </body>
 </html>
