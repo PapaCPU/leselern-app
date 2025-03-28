@@ -1,0 +1,129 @@
+/* Mikrofon-Symbol Stile */
+.mic-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border: 2px solid #ddd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 0 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.mic-button:hover {
+    background-color: #e0e0e0;
+    transform: scale(1.05);
+}
+
+.mic-button.active {
+    background-color: #e8f5e9;
+    border-color: #4CAF50;
+    animation: pulse 1.5s infinite;
+}
+
+.mic-button img {
+    width: 24px;
+    height: 24px;
+}
+
+.mic-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 15px 0;
+}
+
+.mic-text {
+    margin-left: 10px;
+    font-size: 16px;
+}
+
+.mic-timer {
+    font-size: 14px;
+    color: #666;
+    margin-left: 10px;
+}
+
+/* Pulsierender Animationseffekt für aktives Mikrofon */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+    }
+}
+
+/* Anpassungen für Buttons mit Mikrofon-Symbol */
+.btn-with-mic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-with-mic img {
+    margin-right: 8px;
+    width: 20px;
+    height: 20px;
+}
+
+/* Anpassungen für Sprachaufnahme-Feedback */
+.recording-feedback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 10px 0;
+    font-size: 16px;
+    color: #4CAF50;
+}
+
+.recording-feedback.hidden {
+    display: none;
+}
+
+.recording-waves {
+    display: inline-flex;
+    align-items: center;
+    height: 20px;
+    margin-right: 10px;
+}
+
+.recording-wave {
+    width: 3px;
+    height: 100%;
+    margin: 0 2px;
+    background-color: #4CAF50;
+    border-radius: 2px;
+    animation: wave 1s infinite ease-in-out;
+}
+
+.recording-wave:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.recording-wave:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+.recording-wave:nth-child(4) {
+    animation-delay: 0.6s;
+}
+
+.recording-wave:nth-child(5) {
+    animation-delay: 0.8s;
+}
+
+@keyframes wave {
+    0%, 100% {
+        height: 20%;
+    }
+    50% {
+        height: 100%;
+    }
+}
