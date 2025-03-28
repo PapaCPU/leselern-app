@@ -9,7 +9,7 @@ function saveApiKey(apiKey) {
   
   try {
     localStorage.setItem('apiKey', apiKey.trim());
-    showMessage('API-Schlüssel wurde gespeichert!', 'success');
+    // Erfolgsmeldung wird nur in settings-module.js angezeigt, nicht hier
     return true;
   } catch (error) {
     console.error('Fehler beim Speichern des API-Schlüssels:', error);
@@ -26,6 +26,36 @@ function checkApiKey() {
   const apiKey = getApiKey();
   if (!apiKey) {
     showMessage('Kein API-Schlüssel gefunden. Bitte gehe zu den Einstellungen und gib deinen API-Schlüssel ein.', 'error');
+    return false;
+  }
+  return true;
+}
+
+// Google API-Key-Funktionen
+function saveGoogleApiKey(apiKey) {
+  if (!apiKey || apiKey.trim() === '') {
+    showMessage('Bitte gib einen gültigen Google API-Schlüssel ein.', 'error');
+    return false;
+  }
+  
+  try {
+    localStorage.setItem('googleApiKey', apiKey.trim());
+    return true;
+  } catch (error) {
+    console.error('Fehler beim Speichern des Google API-Schlüssels:', error);
+    showMessage('Fehler beim Speichern des Google API-Schlüssels.', 'error');
+    return false;
+  }
+}
+
+function getGoogleApiKey() {
+  return localStorage.getItem('googleApiKey') || '';
+}
+
+function checkGoogleApiKey() {
+  const apiKey = getGoogleApiKey();
+  if (!apiKey) {
+    showMessage('Kein Google API-Schlüssel gefunden. Bitte gehe zu den Einstellungen und gib deinen Google API-Schlüssel ein.', 'error');
     return false;
   }
   return true;
@@ -69,7 +99,8 @@ function saveSettings(settings) {
   for (const [key, value] of Object.entries(settings)) {
     localStorage.setItem(key, value);
   }
-  showMessage('Einstellungen wurden gespeichert!', 'success');
+  // Erfolgsmeldung wird nur in settings-module.js angezeigt, nicht hier
+  return true;
 }
 
 function getSetting(key, defaultValue) {
@@ -98,42 +129,11 @@ document.addEventListener('DOMContentLoaded', function() {
   // Trophäen-Anzeige aktualisieren
   updateTrophyDisplay();
   
-  // API-Key-Speichern-Button
-  const saveApiKeyButton = document.getElementById('save-api-key');
-  if (saveApiKeyButton) {
-    saveApiKeyButton.addEventListener('click', function() {
-      const apiKey = document.getElementById('api-key').value;
-      saveApiKey(apiKey);
-    });
-  }
-  
-  // Einstellungen-Speichern-Button
-  const saveSettingsButton = document.getElementById('save-settings');
-  if (saveSettingsButton) {
-    saveSettingsButton.addEventListener('click', function() {
-      const settings = {
-        difficulty: document.getElementById('difficulty').value,
-        timeLimit: document.getElementById('time-limit').value
-      };
-      saveSettings(settings);
-    });
-  }
-  
-  // Darstellung-Speichern-Button
-  const saveDisplayButton = document.getElementById('save-display');
-  if (saveDisplayButton) {
-    saveDisplayButton.addEventListener('click', function() {
-      const settings = {
-        colorTheme: document.getElementById('color-theme').value,
-        fontSize: document.getElementById('font-size').value
-      };
-      saveSettings(settings);
-      applyDisplaySettings();
-    });
-  }
-  
   // Darstellungseinstellungen anwenden
   applyDisplaySettings();
+  
+  // Die Event-Listener für die Buttons werden in settings-module.js definiert,
+  // um doppelte Event-Listener zu vermeiden
 });
 
 // Darstellungseinstellungen anwenden
@@ -148,4 +148,9 @@ function applyDisplaySettings() {
   // Schriftgröße anwenden
   document.body.classList.remove('font-small', 'font-medium', 'font-large');
   document.body.classList.add('font-' + fontSize);
+}
+
+// Funktion zum Prüfen, ob Pokale für Tests deaktiviert sind
+function areTrophiesDisabled() {
+  return getSetting('disableTrophies', 'false') === 'true';
 }
