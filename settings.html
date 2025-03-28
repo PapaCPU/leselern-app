@@ -28,23 +28,59 @@
             </div>
 
             <div class="card">
+                <h2>Google API-Einstellungen</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="google-api-key">Google API-Schlüssel</label>
+                        <input type="password" id="google-api-key" placeholder="Für Bildgenerierung">
+                    </div>
+                    <div class="text-center">
+                        <button class="btn" id="save-google-api-key">Google API-Schlüssel speichern</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Referenzbilder hochladen</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label>Bild von Papa</label>
+                        <div class="image-upload-container">
+                            <button class="btn" id="upload-papa-image">Bild hochladen</button>
+                            <img id="papa-image-preview" class="image-preview hidden" alt="Vorschau Papa">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bild von Mama</label>
+                        <div class="image-upload-container">
+                            <button class="btn" id="upload-mama-image">Bild hochladen</button>
+                            <img id="mama-image-preview" class="image-preview hidden" alt="Vorschau Mama">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Bild von Leon</label>
+                        <div class="image-upload-container">
+                            <button class="btn" id="upload-leon-image">Bild hochladen</button>
+                            <img id="leon-image-preview" class="image-preview hidden" alt="Vorschau Leon">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
                 <h2>Spieleinstellungen</h2>
                 <div class="settings-form">
                     <div class="form-group">
-                        <label for="difficulty">Schwierigkeitsgrad</label>
-                        <select id="difficulty">
-                            <option value="easy">Leicht</option>
-                            <option value="medium" selected>Mittel</option>
-                            <option value="hard">Schwer</option>
+                        <label for="time-limit">Zeitlimit für Antworten (Sekunden)</label>
+                        <select id="time-limit">
+                            <option value="3" selected>3 Sekunden</option>
+                            <option value="5">5 Sekunden</option>
+                            <option value="8">8 Sekunden</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="time-limit">Zeitlimit für Antworten (Sekunden)</label>
-                        <select id="time-limit">
-                            <option value="5">5 Sekunden</option>
-                            <option value="8" selected>8 Sekunden</option>
-                            <option value="10">10 Sekunden</option>
-                        </select>
+                        <label for="disable-trophies">Pokale deaktivieren (für Tests)</label>
+                        <input type="checkbox" id="disable-trophies">
                     </div>
                     <div class="text-center">
                         <button class="btn" id="save-settings">Einstellungen speichern</button>
@@ -74,6 +110,19 @@
                     </div>
                     <div class="text-center">
                         <button class="btn" id="save-display">Darstellung speichern</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Alle Daten laden</h2>
+                <div class="settings-form">
+                    <p>Lädt alle Wörter und Bilder für die App. Dies kann einige Zeit dauern.</p>
+                    <div class="progress-container hidden">
+                        <div class="progress-bar" id="load-progress" style="width: 0%"></div>
+                    </div>
+                    <div class="text-center">
+                        <button class="btn" id="load-all-data">Alle Daten laden</button>
                     </div>
                 </div>
             </div>
