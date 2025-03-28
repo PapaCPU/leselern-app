@@ -3,40 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wort-Kategorien - Leselern-App</title>
+    <title>Wörter vorlesen - Leselern-App</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/additional-styles.css">
+    <link rel="stylesheet" href="css/microphone-styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Wort-Kategorien</h1>
+            <h1>Wörter vorlesen</h1>
             <p class="text-center">Wähle eine Kategorie und lies die Wörter vor!</p>
         </header>
 
         <main>
             <div class="card">
                 <h2>Kategorien</h2>
-                <div class="menu">
-                    <div class="menu-item">
-                        <button class="btn btn-large" data-category="tiere">Tiere</button>
-                    </div>
-                    <div class="menu-item">
-                        <button class="btn btn-large btn-secondary" data-category="essen">Essen</button>
-                    </div>
-                    <div class="menu-item">
-                        <button class="btn btn-large btn-accent" data-category="farben">Farben</button>
-                    </div>
-                    <div class="menu-item">
-                        <button class="btn btn-large" data-category="spielzeug">Spielzeug</button>
-                    </div>
+                <div class="categories-grid" id="categories-grid">
+                    <!-- Kategorien werden dynamisch generiert -->
                 </div>
             </div>
 
-            <div class="card hidden" id="game-area">
+            <div class="card hidden" id="word-card">
+                <h2 id="category-title">Kategorie</h2>
                 <div class="game-area">
-                    <h3 id="category-title">Kategorie: Tiere</h3>
-                    <div class="word-display" id="current-word">Hund</div>
-                    <button class="btn btn-large" id="start-reading">Vorlesen starten</button>
+                    <div class="word-container">
+                        <p id="word-display" class="word-display">Hund</p>
+                    </div>
+                    
+                    <div class="mic-container">
+                        <div class="mic-button" id="mic-button">
+                            <img src="images/icons/microphone/mic.svg" alt="Mikrofon" id="mic-icon">
+                        </div>
+                        <span class="mic-text">Wort vorlesen</span>
+                        <span class="mic-timer" id="mic-timer"></span>
+                    </div>
+                    
+                    <div class="recording-feedback hidden" id="recording-feedback">
+                        <div class="recording-waves">
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                        </div>
+                        <span>Ich höre zu...</span>
+                    </div>
+                    
                     <div class="feedback" id="feedback"></div>
                 </div>
             </div>
@@ -60,81 +72,142 @@
 
     <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
     <script src="js/minimal.js"></script>
+    <!-- Audio-Recorder und OpenAI API -->
+    <script src="js/audio-recorder.js"></script>
+    <script src="js/openai-api.js"></script>
     <!-- Spielspezifisches JavaScript -->
+    <script src="js/categories-module.js"></script>
     <script>
-        // Hier würde später die Funktionalität für die Spracherkennung und API-Kommunikation implementiert werden
         document.addEventListener('DOMContentLoaded', function() {
-            // Beispielwörter nach Kategorien (später durch API-Anfrage ersetzt)
-            const categories = {
-                tiere: ['Hund', 'Katze', 'Maus', 'Pferd', 'Kuh', 'Vogel'],
-                essen: ['Brot', 'Apfel', 'Käse', 'Milch', 'Wurst', 'Ei'],
-                farben: ['Rot', 'Blau', 'Grün', 'Gelb', 'Schwarz', 'Weiß'],
-                spielzeug: ['Ball', 'Puppe', 'Auto', 'Bausteine', 'Puzzle', 'Buch']
-            };
+            // Audiorecorder initialisieren
+            let audioRecorder = null;
+            let currentCategory = null;
             
-            let currentCategory = '';
-            let currentWordIndex = 0;
+            // Kategorien initialisieren
+            initCategoriesModule();
             
-            // Kategorie-Buttons mit Event-Listenern versehen
-            const categoryButtons = document.querySelectorAll('[data-category]');
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    currentCategory = this.getAttribute('data-category');
-                    document.getElementById('category-title').textContent = 'Kategorie: ' + currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1);
-                    document.getElementById('game-area').classList.remove('hidden');
-                    currentWordIndex = 0;
-                    showWord();
+            // Kategorien anzeigen
+            const categoriesGrid = document.getElementById('categories-grid');
+            if (categoriesGrid) {
+                categories.forEach(category => {
+                    const categoryItem = document.createElement('div');
+                    categoryItem.className = 'category-item';
+                    categoryItem.textContent = category;
+                    categoryItem.addEventListener('click', () => selectCategory(category));
+                    categoriesGrid.appendChild(categoryItem);
                 });
-            });
+            }
             
-            // Wort anzeigen
-            function showWord() {
-                if (currentCategory && categories[currentCategory]) {
-                    const words = categories[currentCategory];
-                    document.getElementById('current-word').textContent = words[currentWordIndex];
+            // Kategorie auswählen
+            function selectCategory(category) {
+                currentCategory = category;
+                
+                // Kategorie-Titel setzen
+                const categoryTitle = document.getElementById('category-title');
+                if (categoryTitle) {
+                    categoryTitle.textContent = category;
+                }
+                
+                // Wort-Karte anzeigen
+                const wordCard = document.getElementById('word-card');
+                if (wordCard) {
+                    wordCard.classList.remove('hidden');
+                }
+                
+                // Zufälliges Wort anzeigen
+                showRandomWord();
+            }
+            
+            // Zufälliges Wort anzeigen
+            function showRandomWord() {
+                if (!currentCategory) return;
+                
+                const word = getRandomWordFromCategory(currentCategory);
+                const wordDisplay = document.getElementById('word-display');
+                
+                if (wordDisplay && word) {
+                    wordDisplay.textContent = word;
                 }
             }
             
-            // Event-Listener für den Start-Button
-            document.getElementById('start-reading').addEventListener('click', function() {
-                if (!currentCategory) return;
-                
-                // API-Key überprüfen
-                if (!checkApiKey()) {
-                    return;
-                }
-                
-                // Hier würde später die Spracherkennung gestartet werden
-                this.textContent = 'Ich höre...';
-                this.disabled = true;
-                
-                // Simulierte Erkennung (später durch echte API-Anfrage ersetzt)
-                setTimeout(function() {
-                    const success = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
-                    const words = categories[currentCategory];
-                    
-                    if (success) {
-                        showMessage('Super! Das war richtig!', 'success');
-                        
-                        // Pokal hinzufügen
-                        addTrophies(1);
-                        
-                        // Zum nächsten Wort wechseln
-                        currentWordIndex = (currentWordIndex + 1) % words.length;
-                    } else {
-                        showMessage('Versuche es noch einmal!', 'error');
+            // Mikrofon-Button-Handler
+            const micButton = document.getElementById('mic-button');
+            const micIcon = document.getElementById('mic-icon');
+            const micTimer = document.getElementById('mic-timer');
+            const recordingFeedback = document.getElementById('recording-feedback');
+            
+            if (micButton) {
+                micButton.addEventListener('click', function() {
+                    // API-Key überprüfen
+                    if (!checkApiKey()) {
+                        return;
                     }
                     
-                    // Button zurücksetzen
-                    document.getElementById('start-reading').textContent = 'Vorlesen starten';
-                    document.getElementById('start-reading').disabled = false;
-                    
-                    // Neues Wort nach kurzer Verzögerung bei Erfolg
-                    if (success) {
-                        setTimeout(showWord, 2000);
+                    // Audiorecorder initialisieren, falls noch nicht geschehen
+                    if (!audioRecorder) {
+                        audioRecorder = createAudioRecorder({
+                            timeLimit: 3000, // 3 Sekunden
+                            silenceDetection: true,
+                            onStart: function() {
+                                micButton.classList.add('active');
+                                micIcon.src = 'images/icons/microphone/mic-active.svg';
+                                recordingFeedback.classList.remove('hidden');
+                                micTimer.textContent = '3s';
+                            },
+                            onStop: async function(audioBlob) {
+                                micButton.classList.remove('active');
+                                micIcon.src = 'images/icons/microphone/mic.svg';
+                                recordingFeedback.classList.add('hidden');
+                                micTimer.textContent = '';
+                                
+                                // Hier würde später die Spracherkennung erfolgen
+                                // Für jetzt simulieren wir eine Antwort
+                                const word = document.getElementById('word-display').textContent;
+                                const isCorrect = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
+                                
+                                if (isCorrect) {
+                                    showMessage(`Super! "${word}" ist richtig!`, 'success');
+                                    
+                                    // Pokal hinzufügen
+                                    if (!areTrophiesDisabled()) {
+                                        addTrophies(1);
+                                    }
+                                    
+                                    // Wort aus der Kategorie entfernen und neues generieren
+                                    removeWordAndGenerateNew(currentCategory, word);
+                                    
+                                    // Neues Wort nach kurzer Verzögerung anzeigen
+                                    setTimeout(showRandomWord, 2000);
+                                } else {
+                                    showMessage(`Versuche es noch einmal! Das Wort ist "${word}".`, 'error');
+                                }
+                            },
+                            onError: function(error) {
+                                console.error('Fehler bei der Sprachaufnahme:', error);
+                                showMessage('Fehler bei der Sprachaufnahme. Bitte versuche es erneut.', 'error');
+                                
+                                micButton.classList.remove('active');
+                                micIcon.src = 'images/icons/microphone/mic.svg';
+                                recordingFeedback.classList.add('hidden');
+                                micTimer.textContent = '';
+                            },
+                            onTimeUpdate: function(elapsed, remaining) {
+                                const remainingSeconds = Math.ceil(remaining / 1000);
+                                micTimer.textContent = remainingSeconds + 's';
+                            }
+                        });
+                        
+                        audioRecorder.init().catch(error => {
+                            console.error('Fehler beim Initialisieren des Audiorecorders:', error);
+                        });
                     }
-                }, 3000);
-            });
+                    
+                    // Sprachaufnahme starten
+                    if (audioRecorder) {
+                        audioRecorder.start();
+                    }
+                });
+            }
         });
     </script>
 </body>
