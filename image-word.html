@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bild-zu-Wort - Leselern-App</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/additional-styles.css">
+    <link rel="stylesheet" href="css/microphone-styles.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Bild-zu-Wort</h1>
-            <p class="text-center">Was siehst du auf dem Bild? Sprich es laut aus!</p>
+            <p class="text-center">Was siehst du auf dem Bild? Schreibe es!</p>
         </header>
 
         <main>
@@ -20,7 +22,31 @@
                     <div id="hint-area" class="mb-20">
                         <p>Tipp: <span id="word-hint">Es beginnt mit H...</span></p>
                     </div>
-                    <button class="btn btn-large" id="start-reading">Antwort geben</button>
+                    <div id="word-display" class="word-display">_ _ _ _</div>
+                    
+                    <div class="keyboard" id="keyboard">
+                        <!-- Tastatur wird dynamisch generiert -->
+                    </div>
+                    
+                    <div class="mic-container">
+                        <div class="mic-button" id="mic-button">
+                            <img src="images/icons/microphone/mic.svg" alt="Mikrofon" id="mic-icon">
+                        </div>
+                        <span class="mic-text">Wort einsprechen</span>
+                        <span class="mic-timer" id="mic-timer"></span>
+                    </div>
+                    
+                    <div class="recording-feedback hidden" id="recording-feedback">
+                        <div class="recording-waves">
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                            <div class="recording-wave"></div>
+                        </div>
+                        <span>Ich höre zu...</span>
+                    </div>
+                    
                     <div class="feedback" id="feedback"></div>
                 </div>
             </div>
@@ -44,68 +70,143 @@
 
     <!-- Minimales JavaScript für API-Kommunikation und Local Storage -->
     <script src="js/minimal.js"></script>
+    <!-- Audio-Recorder und OpenAI API -->
+    <script src="js/audio-recorder.js"></script>
+    <script src="js/openai-api.js"></script>
     <!-- Spielspezifisches JavaScript -->
+    <script src="js/image-word-game.js"></script>
     <script>
-        // Hier würde später die Funktionalität für die Spracherkennung und API-Kommunikation implementiert werden
         document.addEventListener('DOMContentLoaded', function() {
-            // Beispielbilder und Wörter (später durch API-Anfrage ersetzt)
-            const wordImages = [
-                { word: 'Hund', hint: 'Es beginnt mit H...', image: 'images/placeholder.png' },
-                { word: 'Katze', hint: 'Es beginnt mit K...', image: 'images/placeholder.png' },
-                { word: 'Haus', hint: 'Es beginnt mit H...', image: 'images/placeholder.png' }
-            ];
+            // Audiorecorder initialisieren
+            let audioRecorder = null;
             
-            let currentWordIndex = 0;
+            // Tastatur generieren
+            const keyboard = document.getElementById('keyboard');
+            const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
             
-            // Bild und Hinweis anzeigen
-            function showWordImage() {
-                const wordData = wordImages[currentWordIndex];
-                document.getElementById('word-image').src = wordData.image;
-                document.getElementById('word-image').alt = 'Bild zum Erraten: ' + wordData.word;
-                document.getElementById('word-hint').textContent = wordData.hint;
+            for (let i = 0; i < letters.length; i++) {
+                const key = document.createElement('div');
+                key.className = 'key';
+                key.textContent = letters[i];
+                key.addEventListener('click', function() {
+                    handleLetterClick(letters[i]);
+                });
+                keyboard.appendChild(key);
             }
             
-            // Event-Listener für den Start-Button
-            document.getElementById('start-reading').addEventListener('click', function() {
-                // API-Key überprüfen
-                if (!checkApiKey()) {
-                    return;
-                }
+            // Spiel initialisieren
+            initImageWordGame();
+            
+            // Buchstaben-Klick-Handler
+            window.handleLetterClick = function(letter) {
+                const result = checkLetter(letter);
                 
-                // Hier würde später die Spracherkennung gestartet werden
-                this.textContent = 'Ich höre...';
-                this.disabled = true;
-                
-                // Simulierte Erkennung (später durch echte API-Anfrage ersetzt)
-                setTimeout(function() {
-                    const success = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
-                    const wordData = wordImages[currentWordIndex];
+                if (result) {
+                    // Richtig geratener Buchstabe
+                    showMessage(`Richtig! Der Buchstabe "${letter}" ist im Wort.`, 'success');
                     
-                    if (success) {
-                        showMessage('Super! "' + wordData.word + '" ist richtig!', 'success');
+                    // Prüfen, ob das Wort vollständig ist
+                    const wordDisplay = document.getElementById('word-display').textContent;
+                    if (!wordDisplay.includes('_')) {
+                        // Wort vollständig
+                        const wordData = wordImages[currentWordIndex];
+                        showMessage(`Super! "${wordData.word}" ist richtig!`, 'success');
                         
                         // Pokal hinzufügen
-                        addTrophies(1);
+                        if (!areTrophiesDisabled()) {
+                            addTrophies(1);
+                        }
                         
                         // Zum nächsten Wort wechseln
-                        currentWordIndex = (currentWordIndex + 1) % wordImages.length;
-                    } else {
-                        showMessage('Versuche es noch einmal! Tipp: Es ist ein "' + wordData.word + '"', 'error');
+                        setTimeout(function() {
+                            removeWordAndGenerateNew();
+                            showWordImage();
+                        }, 2000);
                     }
-                    
-                    // Button zurücksetzen
-                    document.getElementById('start-reading').textContent = 'Antwort geben';
-                    document.getElementById('start-reading').disabled = false;
-                    
-                    // Neues Bild nach kurzer Verzögerung bei Erfolg
-                    if (success) {
-                        setTimeout(showWordImage, 2000);
-                    }
-                }, 3000);
-            });
+                } else {
+                    // Falsch geratener Buchstabe
+                    showMessage(`Der Buchstabe "${letter}" ist nicht im Wort.`, 'error');
+                }
+            };
             
-            // Initial ein Bild anzeigen
-            showWordImage();
+            // Mikrofon-Button-Handler
+            const micButton = document.getElementById('mic-button');
+            const micIcon = document.getElementById('mic-icon');
+            const micTimer = document.getElementById('mic-timer');
+            const recordingFeedback = document.getElementById('recording-feedback');
+            
+            if (micButton) {
+                micButton.addEventListener('click', function() {
+                    // API-Key überprüfen
+                    if (!checkApiKey()) {
+                        return;
+                    }
+                    
+                    // Audiorecorder initialisieren, falls noch nicht geschehen
+                    if (!audioRecorder) {
+                        audioRecorder = createAudioRecorder({
+                            timeLimit: 3000, // 3 Sekunden
+                            silenceDetection: true,
+                            onStart: function() {
+                                micButton.classList.add('active');
+                                micIcon.src = 'images/icons/microphone/mic-active.svg';
+                                recordingFeedback.classList.remove('hidden');
+                                micTimer.textContent = '3s';
+                            },
+                            onStop: async function(audioBlob) {
+                                micButton.classList.remove('active');
+                                micIcon.src = 'images/icons/microphone/mic.svg';
+                                recordingFeedback.classList.add('hidden');
+                                micTimer.textContent = '';
+                                
+                                // Hier würde später die Spracherkennung erfolgen
+                                // Für jetzt simulieren wir eine Antwort
+                                const wordData = wordImages[currentWordIndex];
+                                const isCorrect = Math.random() > 0.3; // 70% Erfolgswahrscheinlichkeit
+                                
+                                if (isCorrect) {
+                                    showMessage(`Super! "${wordData.word}" ist richtig!`, 'success');
+                                    
+                                    // Pokal hinzufügen
+                                    if (!areTrophiesDisabled()) {
+                                        addTrophies(1);
+                                    }
+                                    
+                                    // Zum nächsten Wort wechseln
+                                    setTimeout(function() {
+                                        removeWordAndGenerateNew();
+                                        showWordImage();
+                                    }, 2000);
+                                } else {
+                                    showMessage(`Versuche es noch einmal! Das Wort ist "${wordData.word}".`, 'error');
+                                }
+                            },
+                            onError: function(error) {
+                                console.error('Fehler bei der Sprachaufnahme:', error);
+                                showMessage('Fehler bei der Sprachaufnahme. Bitte versuche es erneut.', 'error');
+                                
+                                micButton.classList.remove('active');
+                                micIcon.src = 'images/icons/microphone/mic.svg';
+                                recordingFeedback.classList.add('hidden');
+                                micTimer.textContent = '';
+                            },
+                            onTimeUpdate: function(elapsed, remaining) {
+                                const remainingSeconds = Math.ceil(remaining / 1000);
+                                micTimer.textContent = remainingSeconds + 's';
+                            }
+                        });
+                        
+                        audioRecorder.init().catch(error => {
+                            console.error('Fehler beim Initialisieren des Audiorecorders:', error);
+                        });
+                    }
+                    
+                    // Sprachaufnahme starten
+                    if (audioRecorder) {
+                        audioRecorder.start();
+                    }
+                });
+            }
         });
     </script>
 </body>
