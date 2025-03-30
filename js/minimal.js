@@ -1,156 +1,201 @@
-// minimal.js - Minimales JavaScript für API-Kommunikation und Local Storage
+// minimal.js - Minimale JavaScript-Funktionalität für die Leselern-App
 
-// API-Key-Funktionen
-function saveApiKey(apiKey) {
-  if (!apiKey || apiKey.trim() === '') {
-    showMessage('Bitte gib einen gültigen API-Schlüssel ein.', 'error');
-    return false;
-  }
-  
-  try {
-    localStorage.setItem('apiKey', apiKey.trim());
-    // Erfolgsmeldung wird nur in settings-module.js angezeigt, nicht hier
-    return true;
-  } catch (error) {
-    console.error('Fehler beim Speichern des API-Schlüssels:', error);
-    showMessage('Fehler beim Speichern des API-Schlüssels.', 'error');
-    return false;
-  }
-}
+// Globale Variablen
+let apiKey = '';
+let trophyCount = 0;
+let difficultyLevel = 'easy';
+let recordingTime = 3000; // 3 Sekunden
+let silenceDetection = true;
+let trophiesDisabled = false;
 
-function getApiKey() {
-  return localStorage.getItem('apiKey') || '';
-}
-
-function checkApiKey() {
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    showMessage('Kein API-Schlüssel gefunden. Bitte gehe zu den Einstellungen und gib deinen API-Schlüssel ein.', 'error');
-    return false;
-  }
-  return true;
-}
-
-// Google API-Key-Funktionen
-function saveGoogleApiKey(apiKey) {
-  if (!apiKey || apiKey.trim() === '') {
-    showMessage('Bitte gib einen gültigen Google API-Schlüssel ein.', 'error');
-    return false;
-  }
-  
-  try {
-    localStorage.setItem('googleApiKey', apiKey.trim());
-    return true;
-  } catch (error) {
-    console.error('Fehler beim Speichern des Google API-Schlüssels:', error);
-    showMessage('Fehler beim Speichern des Google API-Schlüssels.', 'error');
-    return false;
-  }
-}
-
-function getGoogleApiKey() {
-  return localStorage.getItem('googleApiKey') || '';
-}
-
-function checkGoogleApiKey() {
-  const apiKey = getGoogleApiKey();
-  if (!apiKey) {
-    showMessage('Kein Google API-Schlüssel gefunden. Bitte gehe zu den Einstellungen und gib deinen Google API-Schlüssel ein.', 'error');
-    return false;
-  }
-  return true;
-}
-
-// Trophäen-Funktionen
-function getTrophyCount() {
-  return parseInt(localStorage.getItem('trophyCount') || '0');
-}
-
-function addTrophies(count) {
-  const currentCount = getTrophyCount();
-  const newCount = currentCount + count;
-  localStorage.setItem('trophyCount', newCount.toString());
-  updateTrophyDisplay();
-  return newCount;
-}
-
-function removeTrophies(count) {
-  const currentCount = getTrophyCount();
-  if (currentCount < count) {
-    showMessage('Nicht genug Pokale!', 'error');
-    return false;
-  }
-  
-  const newCount = currentCount - count;
-  localStorage.setItem('trophyCount', newCount.toString());
-  updateTrophyDisplay();
-  return true;
-}
-
-function updateTrophyDisplay() {
-  const trophyCountElement = document.getElementById('trophy-count');
-  if (trophyCountElement) {
-    trophyCountElement.textContent = getTrophyCount();
-  }
-}
-
-// Einstellungs-Funktionen
-function saveSettings(settings) {
-  for (const [key, value] of Object.entries(settings)) {
-    localStorage.setItem(key, value);
-  }
-  // Erfolgsmeldung wird nur in settings-module.js angezeigt, nicht hier
-  return true;
-}
-
-function getSetting(key, defaultValue) {
-  return localStorage.getItem(key) || defaultValue;
-}
-
-// Hilfsfunktionen
-function showMessage(message, type) {
-  const feedbackElement = document.getElementById('feedback');
-  if (feedbackElement) {
-    feedbackElement.textContent = message;
-    feedbackElement.className = 'feedback feedback-' + (type || 'info');
-    
-    // Nachricht nach einiger Zeit ausblenden
-    setTimeout(() => {
-      feedbackElement.textContent = '';
-      feedbackElement.className = 'feedback';
-    }, 3000);
-  } else {
-    alert(message);
-  }
-}
-
-// Initialisierung beim Laden der Seite
+// Beim Laden der Seite ausführen
 document.addEventListener('DOMContentLoaded', function() {
-  // Trophäen-Anzeige aktualisieren
-  updateTrophyDisplay();
-  
-  // Darstellungseinstellungen anwenden
-  applyDisplaySettings();
-  
-  // Die Event-Listener für die Buttons werden in settings-module.js definiert,
-  // um doppelte Event-Listener zu vermeiden
+    // Gespeicherte Werte laden
+    loadSettings();
+    
+    // Trophäen-Anzahl anzeigen
+    updateTrophyDisplay();
 });
 
-// Darstellungseinstellungen anwenden
-function applyDisplaySettings() {
-  const colorTheme = getSetting('colorTheme', 'default');
-  const fontSize = getSetting('fontSize', 'medium');
-  
-  // Farbschema anwenden
-  document.body.classList.remove('theme-default', 'theme-blue', 'theme-pink', 'theme-orange');
-  document.body.classList.add('theme-' + colorTheme);
-  
-  // Schriftgröße anwenden
-  document.body.classList.remove('font-small', 'font-medium', 'font-large');
-  document.body.classList.add('font-' + fontSize);
+// Einstellungen aus dem Local Storage laden
+function loadSettings() {
+    // API-Key laden
+    const savedApiKey = localStorage.getItem('apiKey');
+    if (savedApiKey) {
+        apiKey = savedApiKey;
+    }
+    
+    // Trophäen-Anzahl laden
+    const savedTrophyCount = localStorage.getItem('trophyCount');
+    if (savedTrophyCount !== null) {
+        trophyCount = parseInt(savedTrophyCount, 10);
+    }
+    
+    // Schwierigkeitsgrad laden
+    const savedDifficulty = localStorage.getItem('difficultyLevel');
+    if (savedDifficulty) {
+        difficultyLevel = savedDifficulty;
+    }
+    
+    // Aufnahmezeit laden
+    const savedRecordingTime = localStorage.getItem('recordingTime');
+    if (savedRecordingTime !== null) {
+        recordingTime = parseInt(savedRecordingTime, 10);
+    }
+    
+    // Stille-Erkennung laden
+    const savedSilenceDetection = localStorage.getItem('silenceDetection');
+    if (savedSilenceDetection !== null) {
+        silenceDetection = savedSilenceDetection === 'true';
+    }
+    
+    // Trophäen-Deaktivierung laden
+    const savedTrophiesDisabled = localStorage.getItem('trophiesDisabled');
+    if (savedTrophiesDisabled !== null) {
+        trophiesDisabled = savedTrophiesDisabled === 'true';
+    }
 }
 
-// Funktion zum Prüfen, ob Pokale für Tests deaktiviert sind
+// API-Key speichern
+function saveApiKey(key) {
+    apiKey = key;
+    localStorage.setItem('apiKey', key);
+    console.log('API-Key gespeichert:', key);
+}
+
+// API-Key abrufen
+function getApiKey() {
+    return apiKey;
+}
+
+// API-Key überprüfen
+function checkApiKey() {
+    if (!apiKey) {
+        showMessage('Bitte gib zuerst deinen API-Key in den Einstellungen ein.', 'error');
+        return false;
+    }
+    return true;
+}
+
+// Trophäen hinzufügen
+function addTrophies(count) {
+    if (trophiesDisabled) return;
+    
+    trophyCount += count;
+    localStorage.setItem('trophyCount', trophyCount.toString());
+    updateTrophyDisplay();
+    
+    showMessage(`Du hast ${count} Pokal${count !== 1 ? 'e' : ''} gewonnen!`, 'success');
+}
+
+// Trophäen ausgeben
+function spendTrophies(count) {
+    if (trophyCount < count) {
+        showMessage(`Du hast nicht genug Pokale. Du brauchst ${count} Pokale.`, 'error');
+        return false;
+    }
+    
+    trophyCount -= count;
+    localStorage.setItem('trophyCount', trophyCount.toString());
+    updateTrophyDisplay();
+    
+    return true;
+}
+
+// Trophäen-Anzeige aktualisieren
+function updateTrophyDisplay() {
+    const trophyCountElements = document.querySelectorAll('#trophy-count');
+    trophyCountElements.forEach(element => {
+        element.textContent = trophyCount;
+    });
+}
+
+// Schwierigkeitsgrad speichern
+function saveDifficulty(level) {
+    difficultyLevel = level;
+    localStorage.setItem('difficultyLevel', level);
+}
+
+// Schwierigkeitsgrad abrufen
+function getDifficulty() {
+    return difficultyLevel;
+}
+
+// Aufnahmezeit speichern
+function saveRecordingTime(time) {
+    recordingTime = time;
+    localStorage.setItem('recordingTime', time.toString());
+}
+
+// Aufnahmezeit abrufen
+function getRecordingTime() {
+    return recordingTime;
+}
+
+// Stille-Erkennung speichern
+function saveSilenceDetection(enabled) {
+    silenceDetection = enabled;
+    localStorage.setItem('silenceDetection', enabled.toString());
+}
+
+// Stille-Erkennung abrufen
+function getSilenceDetection() {
+    return silenceDetection;
+}
+
+// Trophäen-Deaktivierung speichern
+function saveTrophiesDisabled(disabled) {
+    trophiesDisabled = disabled;
+    localStorage.setItem('trophiesDisabled', disabled.toString());
+}
+
+// Trophäen-Deaktivierung abrufen
 function areTrophiesDisabled() {
-  return getSetting('disableTrophies', 'false') === 'true';
+    return trophiesDisabled;
+}
+
+// Nachricht anzeigen
+function showMessage(message, type = 'info') {
+    const feedbackElements = document.querySelectorAll('.feedback');
+    
+    feedbackElements.forEach(element => {
+        element.textContent = message;
+        element.className = 'feedback ' + type;
+        
+        // Nach 3 Sekunden ausblenden
+        setTimeout(() => {
+            element.textContent = '';
+            element.className = 'feedback';
+        }, 3000);
+    });
+}
+
+// Referenzbild speichern
+function saveReferenceImage(name, dataUrl) {
+    localStorage.setItem('refImage_' + name, dataUrl);
+}
+
+// Referenzbild abrufen
+function getReferenceImage(name) {
+    return localStorage.getItem('refImage_' + name);
+}
+
+// Alle Referenzbilder abrufen
+function getAllReferenceImages() {
+    const images = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('refImage_')) {
+            const name = key.replace('refImage_', '');
+            images[name] = localStorage.getItem(key);
+        }
+    }
+    return images;
+}
+
+// Zufällige Zahl zwischen min und max generieren
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
