@@ -1,169 +1,152 @@
-// categories-module.js - Funktionalität für die Kategorien und Wortgenerierung
+// categories-module.js - Funktionalität für die Kategorien und Wörter
 
-// Kategorien für die App
+// Kategorien
 const categories = [
-  'Tiere', 
-  'Essen', 
-  'Spielzeug', 
-  'Fahrzeuge', 
-  'Natur',
-  'Sport',
-  'Familie',
-  'Schule',
-  'Kleidung',
-  'Farben',
-  'Körper'
+    'Tiere',
+    'Essen',
+    'Spielzeug',
+    'Natur',
+    'Fahrzeuge',
+    'Sport',
+    'Familie',
+    'Schule',
+    'Kleidung',
+    'Farben',
+    'Körper'
 ];
 
-// Wörter für jede Kategorie
-let categoryWords = {};
+// Wörter pro Kategorie
+let categoryWords = {
+    'Tiere': ['Hund', 'Katze', 'Maus', 'Elefant', 'Löwe', 'Giraffe', 'Affe', 'Zebra', 'Vogel', 'Fisch'],
+    'Essen': ['Apfel', 'Banane', 'Brot', 'Käse', 'Pizza', 'Nudeln', 'Suppe', 'Kuchen', 'Eis', 'Wasser'],
+    'Spielzeug': ['Ball', 'Puppe', 'Auto', 'Bausteine', 'Puzzle', 'Teddy', 'Spiel', 'Karte', 'Roller', 'Buch'],
+    'Natur': ['Baum', 'Blume', 'Sonne', 'Mond', 'Stern', 'Wolke', 'Regen', 'Berg', 'Fluss', 'Wald'],
+    'Fahrzeuge': ['Auto', 'Bus', 'Zug', 'Flugzeug', 'Schiff', 'Fahrrad', 'Roller', 'Traktor', 'Taxi', 'Bahn'],
+    'Sport': ['Fußball', 'Tennis', 'Schwimmen', 'Laufen', 'Tanzen', 'Reiten', 'Turnen', 'Ski', 'Ball', 'Tor'],
+    'Familie': ['Mama', 'Papa', 'Bruder', 'Schwester', 'Oma', 'Opa', 'Tante', 'Onkel', 'Baby', 'Kind'],
+    'Schule': ['Stift', 'Heft', 'Tafel', 'Buch', 'Lehrer', 'Klasse', 'Pause', 'Schule', 'Mappe', 'Tisch'],
+    'Kleidung': ['Hose', 'Hemd', 'Kleid', 'Schuhe', 'Socken', 'Jacke', 'Mütze', 'Schal', 'Pullover', 'Mantel'],
+    'Farben': ['Rot', 'Blau', 'Gelb', 'Grün', 'Schwarz', 'Weiß', 'Lila', 'Orange', 'Braun', 'Pink'],
+    'Körper': ['Kopf', 'Arm', 'Bein', 'Hand', 'Fuß', 'Auge', 'Nase', 'Mund', 'Ohr', 'Haar']
+};
 
-// Funktion zum Initialisieren der Kategorien und Wörter
-async function initCategories() {
-  // Prüfen, ob bereits Wörter im Local Storage vorhanden sind
-  const storedWords = localStorage.getItem('categoryWords');
-  if (storedWords) {
-    categoryWords = JSON.parse(storedWords);
-    
-    // Prüfen, ob alle Kategorien vorhanden sind und genügend Wörter haben
-    let needsUpdate = false;
-    for (const category of categories) {
-      if (!categoryWords[category] || categoryWords[category].length < 10) {
-        needsUpdate = true;
-        break;
-      }
-    }
-    
-    if (!needsUpdate) {
-      return true;
-    }
-  } else {
-    categoryWords = {};
-  }
-
-  // Für jede Kategorie 10 Wörter generieren
-  for (const category of categories) {
-    if (!categoryWords[category]) {
-      categoryWords[category] = [];
-    }
-    
-    // Auffüllen auf 10 Wörter
-    while (categoryWords[category].length < 10) {
-      try {
-        const newWord = await generateWordForCategory(category);
-        if (newWord && !categoryWords[category].includes(newWord)) {
-          categoryWords[category].push(newWord);
-          
-          // Speichern nach jedem neuen Wort
-          localStorage.setItem('categoryWords', JSON.stringify(categoryWords));
-          
-          // Fortschritt aktualisieren, falls vorhanden
-          updateLoadProgress();
-        }
-      } catch (error) {
-        console.error(`Fehler beim Generieren eines Wortes für ${category}:`, error);
-      }
-    }
-  }
-  
-  return true;
+// Kategorien-Modul initialisieren
+function initCategoriesModule() {
+    // Gespeicherte Wörter laden
+    loadCategoryWords();
 }
 
-// Funktion zum Generieren eines Wortes für eine Kategorie
-async function generateWordForCategory(category) {
-  // Prüfen, ob API-Key vorhanden ist
-  if (!checkApiKey()) {
-    return null;
-  }
-  
-  try {
-    // Hier würde später die API-Anfrage erfolgen
-    // Für jetzt simulieren wir eine Antwort
+// Gespeicherte Wörter laden
+function loadCategoryWords() {
+    const savedCategoryWords = localStorage.getItem('categoryWords');
+    if (savedCategoryWords) {
+        try {
+            const parsedWords = JSON.parse(savedCategoryWords);
+            // Nur vorhandene Kategorien übernehmen
+            for (const category in parsedWords) {
+                if (categories.includes(category)) {
+                    categoryWords[category] = parsedWords[category];
+                }
+            }
+        } catch (error) {
+            console.error('Fehler beim Laden der gespeicherten Wörter:', error);
+        }
+    }
+}
+
+// Wörter speichern
+function saveCategoryWords() {
+    localStorage.setItem('categoryWords', JSON.stringify(categoryWords));
+}
+
+// Zufälliges Wort aus einer Kategorie abrufen
+function getRandomWordFromCategory(category) {
+    if (!categoryWords[category] || categoryWords[category].length === 0) {
+        // Wenn keine Wörter mehr in der Kategorie sind, neue generieren
+        generateNewWordsForCategory(category);
+    }
     
-    // Beispielwörter für verschiedene Kategorien
-    const wordsByCategory = {
-      'Tiere': ['Affe', 'Bär', 'Chamäleon', 'Dachs', 'Elefant', 'Fuchs', 'Giraffe', 'Hund', 'Igel', 'Jaguar', 'Katze', 'Löwe', 'Maus', 'Nashorn', 'Otter', 'Pinguin', 'Qualle', 'Reh', 'Schaf', 'Tiger', 'Uhu', 'Vogel', 'Wolf', 'Zebra'],
-      'Essen': ['Apfel', 'Banane', 'Croissant', 'Donut', 'Erdbeere', 'Fisch', 'Gurke', 'Honig', 'Eis', 'Joghurt', 'Käse', 'Lauch', 'Milch', 'Nudeln', 'Orange', 'Pizza', 'Quark', 'Reis', 'Salat', 'Tomate', 'Vanille', 'Waffel', 'Zucker'],
-      'Spielzeug': ['Auto', 'Ball', 'Computer', 'Drachen', 'Eisenbahn', 'Fußball', 'Gameboy', 'Hula-Hoop', 'Jo-Jo', 'Knetmasse', 'Lego', 'Murmel', 'Puppe', 'Roller', 'Schaukel', 'Teddy', 'Videospiel', 'Würfel', 'Xylophon', 'Yo-Yo', 'Zauberwürfel'],
-      'Fahrzeuge': ['Auto', 'Bus', 'Cabrio', 'Dampfer', 'Eisenbahn', 'Fahrrad', 'Gondel', 'Hubschrauber', 'Jet', 'Kutsche', 'Lkw', 'Motorrad', 'Omnibus', 'Panzer', 'Quad', 'Rennwagen', 'Schiff', 'Traktor', 'U-Boot', 'Van', 'Wohnmobil', 'Zug'],
-      'Natur': ['Ast', 'Baum', 'Cactus', 'Düne', 'Erde', 'Fluss', 'Gras', 'Himmel', 'Insel', 'Kiesel', 'Laub', 'Meer', 'Natur', 'Ozean', 'Palme', 'Quelle', 'Regen', 'Sonne', 'Tal', 'Urwald', 'Vulkan', 'Wald', 'Zweig'],
-      'Sport': ['Angeln', 'Basketball', 'Cricket', 'Dart', 'Eishockey', 'Fußball', 'Golf', 'Handball', 'Joggen', 'Klettern', 'Laufen', 'Marathon', 'Olympia', 'Polo', 'Rudern', 'Schwimmen', 'Tennis', 'Volleyball', 'Weitsprung', 'Yoga', 'Zehnkampf'],
-      'Familie': ['Bruder', 'Cousin', 'Daddy', 'Eltern', 'Familie', 'Großeltern', 'Halbbruder', 'Kind', 'Mama', 'Neffe', 'Oma', 'Papa', 'Schwester', 'Tante', 'Urgroßvater', 'Vater', 'Zwilling'],
-      'Schule': ['Aufgabe', 'Buch', 'Computer', 'Direktor', 'Erziehung', 'Fach', 'Grundschule', 'Heft', 'Klasse', 'Lehrer', 'Mathe', 'Note', 'Ordner', 'Pause', 'Quiz', 'Ranzen', 'Schule', 'Tafel', 'Unterricht', 'Wissen', 'Zeugnis'],
-      'Kleidung': ['Anzug', 'Bluse', 'Cap', 'Dress', 'Fliege', 'Gürtel', 'Hose', 'Jacke', 'Kleid', 'Latzhose', 'Mantel', 'Nachthemd', 'Overall', 'Pullover', 'Rock', 'Socke', 'T-Shirt', 'Unterhose', 'Winterjacke', 'Zip-Jacke'],
-      'Farben': ['Blau', 'Cyan', 'Dunkelblau', 'Grün', 'Hellblau', 'Indigo', 'Karminrot', 'Lila', 'Magenta', 'Orange', 'Pink', 'Rot', 'Schwarz', 'Türkis', 'Violett', 'Weiß', 'Gelb'],
-      'Körper': ['Arm', 'Bauch', 'Daumen', 'Ellbogen', 'Finger', 'Gesicht', 'Hand', 'Kopf', 'Lippe', 'Mund', 'Nase', 'Ohr', 'Po', 'Rücken', 'Schulter', 'Unterarm', 'Wade', 'Zeh']
+    const words = categoryWords[category];
+    if (words.length === 0) return null;
+    
+    const randomIndex = Math.floor(Math.random() * words.length);
+    return words[randomIndex];
+}
+
+// Wort aus einer Kategorie entfernen und ein neues generieren
+function removeWordAndGenerateNew(category, word) {
+    if (!categoryWords[category]) return;
+    
+    // Wort aus der Kategorie entfernen
+    const index = categoryWords[category].indexOf(word);
+    if (index !== -1) {
+        categoryWords[category].splice(index, 1);
+    }
+    
+    // Neues Wort generieren und hinzufügen
+    const newWord = generateNewWord(category);
+    if (newWord) {
+        categoryWords[category].push(newWord);
+    }
+    
+    // Wörter speichern
+    saveCategoryWords();
+}
+
+// Neue Wörter für eine Kategorie generieren
+function generateNewWordsForCategory(category) {
+    // Hier würde später die echte Wortgenerierung mit GPT erfolgen
+    // Für jetzt verwenden wir vordefinierte Wörter
+    
+    const defaultWords = {
+        'Tiere': ['Hund', 'Katze', 'Maus', 'Elefant', 'Löwe', 'Giraffe', 'Affe', 'Zebra', 'Vogel', 'Fisch'],
+        'Essen': ['Apfel', 'Banane', 'Brot', 'Käse', 'Pizza', 'Nudeln', 'Suppe', 'Kuchen', 'Eis', 'Wasser'],
+        'Spielzeug': ['Ball', 'Puppe', 'Auto', 'Bausteine', 'Puzzle', 'Teddy', 'Spiel', 'Karte', 'Roller', 'Buch'],
+        'Natur': ['Baum', 'Blume', 'Sonne', 'Mond', 'Stern', 'Wolke', 'Regen', 'Berg', 'Fluss', 'Wald'],
+        'Fahrzeuge': ['Auto', 'Bus', 'Zug', 'Flugzeug', 'Schiff', 'Fahrrad', 'Roller', 'Traktor', 'Taxi', 'Bahn'],
+        'Sport': ['Fußball', 'Tennis', 'Schwimmen', 'Laufen', 'Tanzen', 'Reiten', 'Turnen', 'Ski', 'Ball', 'Tor'],
+        'Familie': ['Mama', 'Papa', 'Bruder', 'Schwester', 'Oma', 'Opa', 'Tante', 'Onkel', 'Baby', 'Kind'],
+        'Schule': ['Stift', 'Heft', 'Tafel', 'Buch', 'Lehrer', 'Klasse', 'Pause', 'Schule', 'Mappe', 'Tisch'],
+        'Kleidung': ['Hose', 'Hemd', 'Kleid', 'Schuhe', 'Socken', 'Jacke', 'Mütze', 'Schal', 'Pullover', 'Mantel'],
+        'Farben': ['Rot', 'Blau', 'Gelb', 'Grün', 'Schwarz', 'Weiß', 'Lila', 'Orange', 'Braun', 'Pink'],
+        'Körper': ['Kopf', 'Arm', 'Bein', 'Hand', 'Fuß', 'Auge', 'Nase', 'Mund', 'Ohr', 'Haar']
     };
     
-    // Zufälliges Wort aus der Kategorie zurückgeben
-    if (wordsByCategory[category] && wordsByCategory[category].length > 0) {
-      const randomIndex = Math.floor(Math.random() * wordsByCategory[category].length);
-      return wordsByCategory[category][randomIndex];
+    if (defaultWords[category]) {
+        categoryWords[category] = [...defaultWords[category]];
     } else {
-      return null;
+        // Fallback für unbekannte Kategorien
+        categoryWords[category] = ['Wort1', 'Wort2', 'Wort3', 'Wort4', 'Wort5', 'Wort6', 'Wort7', 'Wort8', 'Wort9', 'Wort10'];
     }
-  } catch (error) {
-    console.error('Fehler beim Generieren eines Wortes:', error);
-    return null;
-  }
+    
+    // Wörter speichern
+    saveCategoryWords();
 }
 
-// Funktion zum Abrufen eines zufälligen Wortes aus einer Kategorie
-function getRandomWordFromCategory(category) {
-  if (!categoryWords[category] || categoryWords[category].length === 0) {
-    return null;
-  }
-  
-  const randomIndex = Math.floor(Math.random() * categoryWords[category].length);
-  return categoryWords[category][randomIndex];
-}
-
-// Funktion zum Entfernen eines Wortes aus einer Kategorie und Generieren eines neuen
-async function removeWordAndGenerateNew(category, word) {
-  if (!categoryWords[category]) {
-    return;
-  }
-  
-  // Wort aus der Kategorie entfernen
-  const index = categoryWords[category].indexOf(word);
-  if (index !== -1) {
-    categoryWords[category].splice(index, 1);
-  }
-  
-  // Neues Wort generieren
-  try {
-    const newWord = await generateWordForCategory(category);
-    if (newWord && !categoryWords[category].includes(newWord)) {
-      categoryWords[category].push(newWord);
-      
-      // Speichern
-      localStorage.setItem('categoryWords', JSON.stringify(categoryWords));
+// Neues Wort generieren
+function generateNewWord(category) {
+    // Hier würde später die echte Wortgenerierung mit GPT erfolgen
+    // Für jetzt verwenden wir vordefinierte Wörter
+    
+    const additionalWords = {
+        'Tiere': ['Pferd', 'Kuh', 'Schwein', 'Huhn', 'Ente', 'Frosch', 'Bär', 'Tiger', 'Eule', 'Igel'],
+        'Essen': ['Milch', 'Saft', 'Keks', 'Obst', 'Gemüse', 'Fleisch', 'Fisch', 'Reis', 'Ei', 'Honig'],
+        'Spielzeug': ['Lego', 'Zug', 'Schiff', 'Drachen', 'Knetmasse', 'Farben', 'Seil', 'Kreisel', 'Maske', 'Roboter'],
+        'Natur': ['Gras', 'Blatt', 'Sand', 'Stein', 'Meer', 'See', 'Wind', 'Schnee', 'Eis', 'Feuer'],
+        'Fahrzeuge': ['Lkw', 'Bagger', 'Kran', 'Boot', 'Hubschrauber', 'Rakete', 'Motorrad', 'Polizei', 'Feuerwehr', 'Rennwagen'],
+        'Sport': ['Handball', 'Basketball', 'Hockey', 'Golf', 'Judo', 'Boxen', 'Yoga', 'Springen', 'Werfen', 'Klettern'],
+        'Familie': ['Cousin', 'Cousine', 'Neffe', 'Nichte', 'Enkel', 'Enkelin', 'Eltern', 'Geschwister', 'Großeltern', 'Verwandte'],
+        'Schule': ['Lineal', 'Schere', 'Kleber', 'Farbe', 'Rucksack', 'Mäppchen', 'Hausaufgabe', 'Rechnen', 'Lesen', 'Schreiben'],
+        'Kleidung': ['Unterhose', 'T-Shirt', 'Rock', 'Stiefel', 'Sandalen', 'Handschuhe', 'Gürtel', 'Krawatte', 'Pyjama', 'Badeanzug'],
+        'Farben': ['Grau', 'Türkis', 'Gold', 'Silber', 'Beige', 'Mint', 'Magenta', 'Violett', 'Indigo', 'Ocker'],
+        'Körper': ['Finger', 'Zehe', 'Bauch', 'Rücken', 'Schulter', 'Knie', 'Ellbogen', 'Zahn', 'Zunge', 'Hals']
+    };
+    
+    if (additionalWords[category]) {
+        const randomIndex = Math.floor(Math.random() * additionalWords[category].length);
+        return additionalWords[category][randomIndex];
+    } else {
+        // Fallback für unbekannte Kategorien
+        return 'Neues Wort';
     }
-  } catch (error) {
-    console.error(`Fehler beim Generieren eines neuen Wortes für ${category}:`, error);
-  }
-}
-
-// Funktion zum Aktualisieren des Ladefortschritts
-function updateLoadProgress() {
-  const progressBar = document.getElementById('load-progress');
-  if (!progressBar) return;
-  
-  // Berechnen des Gesamtfortschritts
-  let totalWords = 0;
-  let targetWords = categories.length * 10;
-  
-  for (const category in categoryWords) {
-    totalWords += categoryWords[category].length;
-  }
-  
-  const percent = Math.min(100, Math.round((totalWords / targetWords) * 100));
-  progressBar.style.width = percent + '%';
-}
-
-// Funktion zum Initialisieren des Kategorien-Moduls
-function initCategoriesModule() {
-  initCategories().then(() => {
-    console.log('Kategorien initialisiert');
-  });
 }
